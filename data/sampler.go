@@ -2,8 +2,9 @@ package data
 
 import (
 	"fmt"
-	"github.com/sqshq/sampler/config"
 	"time"
+
+	"github.com/sqshq/sampler/config"
 )
 
 type Sampler struct {

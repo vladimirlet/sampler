@@ -1,9 +1,10 @@
 package config
 
 import (
+	"image"
+
 	ui "github.com/gizak/termui/v3"
 	"github.com/sqshq/sampler/console"
-	"image"
 )
 
 type ComponentType rune
@@ -72,6 +73,7 @@ type SparkLineConfig struct {
 	Scale           *int        `yaml:"scale,omitempty"`
 	Item            Item        `yaml:",inline"`
 	Gradient        *[]ui.Color `yaml:",omitempty"`
+	Rate            bool        `yaml:",omitempty"`
 }
 
 type BarChartConfig struct {
@@ -98,6 +100,7 @@ type RunChartConfig struct {
 	Legend          *LegendConfig `yaml:"legend,omitempty"`
 	Scale           *int          `yaml:"scale,omitempty"`
 	Items           []Item        `yaml:"items"`
+	Rate            bool          `yaml:",omitempty"`
 }
 
 type LegendConfig struct {

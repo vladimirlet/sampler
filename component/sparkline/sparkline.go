@@ -1,14 +1,15 @@
 package sparkline
 
 import (
+	"image"
+	"sync"
+
 	ui "github.com/gizak/termui/v3"
 	"github.com/sqshq/sampler/component"
 	"github.com/sqshq/sampler/component/util"
 	"github.com/sqshq/sampler/config"
 	"github.com/sqshq/sampler/console"
 	"github.com/sqshq/sampler/data"
-	"image"
-	"sync"
 )
 
 // SparkLine displays general shape of a measurement variation over time
@@ -22,6 +23,8 @@ type SparkLine struct {
 	gradient []ui.Color
 	palette  console.Palette
 	mutex    *sync.Mutex
+	rate     bool
+	lastVal  float64
 }
 
 func NewSparkLine(c config.SparkLineConfig, palette console.Palette) *SparkLine {
@@ -34,6 +37,8 @@ func NewSparkLine(c config.SparkLineConfig, palette console.Palette) *SparkLine 
 		gradient: *c.Gradient,
 		palette:  palette,
 		mutex:    &sync.Mutex{},
+		rate:     c.Rate,
+		lastVal:  0,
 	}
 
 	go func() {
@@ -59,6 +64,18 @@ func (s *SparkLine) consumeSample(sample *data.Sample) {
 	}
 
 	s.HandleConsumeSuccess()
+
+	if s.rate {
+		if len(s.values) == 0 {
+			s.lastVal = float
+		}
+		tmp := float
+		float = tmp - s.lastVal
+		s.lastVal = tmp
+		if float < 0 {
+			float = 0
+		}
+	}
 
 	s.values = append(s.values, float)
 	max, min := s.values[0], s.values[0]

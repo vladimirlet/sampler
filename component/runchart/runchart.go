@@ -1,15 +1,16 @@
 package runchart
 
 import (
+	"image"
+	"math"
+	"sync"
+	"time"
+
 	"github.com/sqshq/sampler/component"
 	"github.com/sqshq/sampler/component/util"
 	"github.com/sqshq/sampler/config"
 	"github.com/sqshq/sampler/console"
 	"github.com/sqshq/sampler/data"
-	"image"
-	"math"
-	"sync"
-	"time"
 
 	ui "github.com/gizak/termui/v3"
 )
@@ -51,6 +52,8 @@ type RunChart struct {
 	scale     int
 	legend    legend
 	palette   console.Palette
+	rate      bool
+	lastValue []float64
 }
 
 type TimePoint struct {
@@ -90,6 +93,8 @@ func NewRunChart(c config.RunChartConfig, palette console.Palette) *RunChart {
 		mode:      ModeDefault,
 		legend:    legend{Enabled: c.Legend.Enabled, Details: c.Legend.Details},
 		palette:   palette,
+		rate:      c.Rate,
+		lastValue: []float64{},
 	}
 
 	for _, i := range c.Items {
@@ -152,6 +157,7 @@ func (c *RunChart) AddLine(Label string, color ui.Color) {
 		extrema: ValueExtrema{max: -math.MaxFloat64, min: math.MaxFloat64},
 	}
 	c.lines = append(c.lines, line)
+	c.lastValue = append(c.lastValue, 0)
 }
 
 func (c *RunChart) consumeSample(sample *data.Sample) {
@@ -174,6 +180,18 @@ func (c *RunChart) consumeSample(sample *data.Sample) {
 	}
 
 	line := c.lines[index]
+
+	if c.rate {
+		if len(line.points) == 0 {
+			c.lastValue[index] = float
+		}
+		lastValue := c.lastValue[index]
+		c.lastValue[index] = float
+		float = float - lastValue
+		if float < 0 {
+			float = 0
+		}
+	}
 
 	if float < line.extrema.min {
 		line.extrema.min = float
